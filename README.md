@@ -6,12 +6,42 @@ The authenticator application that manages user authentication and oAuth authori
 Functionality Required:
 
 - [x] Create User
-- [x] Save Users into Database
+- [x] User Storage
 - [ ] Register for a new account
+    - [ ] Create Registration Form
+    - [ ] Add password strength tool
+    - [ ] Add username & email address duplicate checker
+    - [ ] Create api endpoints to check for usernames and email addresses
+    - [ ] Add captcha (if necessary)
 - [ ] Log into an account
+    - [ ] Create Login form
+    - [ ] Add flash messages for information
 - [ ] Reset password
+    - [ ] Create Reset Password form
+    - [ ] Add reset password link to login form
 - [ ] Verify email address
+    - [ ] Add endpoint to verify email
+    - [ ] Add template for verification page
+- [ ] Add CSRF token functionality
 - [ ] OAuth2 functionality
+    - [ ] Implement implicit flow
+    - [ ] Implement token verification endpoint
+    - [ ] Add a page where users can administer their authorizations
+- [ ] Create combined login and registration form
+- [ ] Migrate application to Angular front end
+- [ ] Add flood controls and rate limiting
+- [ ] Email Notices functionality
+    - [ ] Add SendGrid functionality
+    - [ ] Account Registration notice
+    - [ ] Password Reset notice
+- [ ] Add a basic profile page
+    - [ ] Add functionality to update the user's password
+    - [ ] Add functionality to update the user's email address
+    - [ ] Add functionality to update the user's username
+- [ ] Basic user management interface
+    - [ ] Create new users
+    - [ ] Disable user accounts
+    - [ ] Delete user accounts
 
 All the functionality for user actions should be contained in libuser, but
 the templates for HTML should be in the main authenticator repository. There

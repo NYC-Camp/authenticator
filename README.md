@@ -5,6 +5,8 @@ The authenticator application that manages user authentication and oAuth authori
 
 Functionality Required:
 
+- [x] Create User
+- [x] Save Users into Database
 - [ ] Register for a new account
 - [ ] Log into an account
 - [ ] Reset password
@@ -21,6 +23,24 @@ information must live in the applications (partnership site, content engine,
 etc..) and be exposed in a way those applications see fit. This system only
 handles the authentication of users and the control of OAuth2 tokens and
 authorizations.
+
+Requirements
+------------
+After cloning into your Go Workspace, run go install to grab all the
+dependencies.
+If you want to use the database migration scripts, download
+[goose](https://bitbucket.org/liamstask/goose)
+
+Setup
+-----
+If you're using [goose](https://bitbucket.org/liamstask/goose) setup your
+db/dbconf.yml file with your db connection:
+
+```yaml
+development:
+    driver: mymysql
+    open: authenticator/authenticator/authenticator
+```
 
 Reasoning
 ---------

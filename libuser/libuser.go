@@ -30,6 +30,13 @@ type UserStorage interface {
 	CreateUser(user User) (bool, error)
 	UpdateUser(user User) (bool, error)
 	DeleteUser(user User) (bool, error)
+	// Checks if the username has already been used
+	// Returns true if it has and false if it hasn't
+	CheckUsername(username string) (bool, error)
+	// Checks if the email address has already been used
+	// Returns true if it has and false if it hasn't
+	CheckEmail(email string) (bool, error)
+	CheckPassword(username, password string) (bool, error)
 }
 
 /// CreateUser creates an empty user and returns it.

@@ -4,14 +4,14 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/codegangsta/negroni"
 	"github.com/coopernurse/gorp"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
+	"github.com/julienschmidt/httprouter"
+	"github.com/nyc-camp/authenticator/libtmpl"
 	"github.com/nyc-camp/authenticator/libuser"
 )
 
@@ -25,28 +25,24 @@ func init() {
 	}
 
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
-	table := dbmap.AddTableWithName(libuser.User{}, "user").SetKeys(false, "uid")
-	log.Printf("%v\n", table)
+	dbmap.AddTableWithName(libuser.User{}, "user").SetKeys(false, "uid")
 	userStorageMySQL = UserStorageMySQL{Dbmap: dbmap}
 }
 
 func main() {
-	router := mux.NewRouter()
-	n := negroni.Classic()
+	loginTmplCfg := libtmpl.HTMLTemplateConfig{TemplateDir: "templates/", DefaultErrorFunc: libuser.HandleError}
+	router := httprouter.New()
+	recoveryMiddleware := negroni.NewRecovery()
+	recoveryMiddleware.PrintStack = false
+	n := negroni.New(recoveryMiddleware, negroni.NewLogger(), negroni.NewStatic(http.Dir("public")))
 
-	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		aUser := libuser.CreateUser()
-		aUser.Email = "hello@world.com"
-		aUser.Username = "hello"
-		aUser.SetPassword([]byte("Hello"))
-		success, err := userStorageMySQL.CreateUser(aUser)
-		if err != nil {
-			log.Printf("%v\n", err)
-		}
+	userRegistration := libuser.UserRegistration{Storage: userStorageMySQL}
+	userLogin := libuser.UserLogin{Storage: userStorageMySQL, TemplateConfig: loginTmplCfg}
 
-		w.Write([]byte("Welcome to the Authenticator!"))
-		w.Write([]byte(fmt.Sprintf("<div>%v</div>", success)))
-	})
+	router.GET("/register", userRegistration.GetRegistrationForm)
+	router.POST("/register", userRegistration.HandleRegistrationSubmission)
+	router.GET("/login", userLogin.LoginForm)
+	router.POST("/login", userLogin.LoginSubmission)
 
 	n.UseHandler(router)
 

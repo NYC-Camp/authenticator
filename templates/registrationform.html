@@ -1,16 +1,33 @@
 {{define "content"}}
-<div class="flash-message">{{.error}}</div>
-<form action="/register/" method="post">
-    <fieldset>
-        <label for="username">Username:</label>
-        <input type="text" name="username" placeholder="username"
-        value="{{.username}}">
-        <label for="email">Email Address:</label>
-        <input type="email" name="email" placeholder="email address"
-        value="{{.email}}">
-        <label for="password">Password:</label>
-        <input type="password" name="password" placeholder="password">
-        <input type="submit" value="submit">
-    </fieldset>
-</form>
+<div class="pure-g">
+    <div class="register-container">
+        <div class="register pure-u-sm-1 pure-u-md-3-5 pure-u-lg-2-5">
+            {{if .flashes}}
+            <div class="flash-messages">
+                {{range .flashes}}
+                    <div class="flash">
+                        {{.}}
+                    </div>
+                {{end}}
+            </div>
+            {{end}}
+            {{if .error}}
+            <div class="error-messages">
+                <div class="error-message">{{.error}}</div>
+            </div>
+            {{end}}
+            <form action="/register/" method="post" class="pure-form">
+                <fieldset class="pure-group">
+                    <input type="text" name="username" placeholder="username"
+                    value="{{.username}}" class="pure-input-1-2">
+                    <input type="email" name="email" placeholder="email address"
+                    value="{{.email}}" class="pure-input-1-2">
+                    <input type="password" name="password" placeholder="password" class="pure-input-1-2">
+                    <input type="submit" value="Create Account" class="pure-button
+                    pure-input-1-2 pure-button-primary">
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</div>
 {{end}}

@@ -1,0 +1,69 @@
+html, button, input, select, textarea,
+.pure-g [class *= "pure-u"] {
+    font-family: 'Source Sans Pro', sans-serif;
+}
+.pure-menu.pure-menu-open.pure-menu-fixed {
+    z-index: 4;
+    border-bottom: none;
+}
+
+.login-container,
+.register-container {
+    background: url("nyc-drupal-camp.jpg") #0C5DA5 no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    position: fixed;
+}
+
+.login,
+.register {
+    position: absolute;
+    margin: auto;
+    top: 100px;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    text-align: center;
+}
+
+.pure-form .pure-group input {
+    margin: auto;
+    width: 100%;
+}
+
+.flash-messages {
+    color: #EFF0F2;
+    border: 3px solid #EFF0F2;
+    padding: 1em 1.6em;
+}
+
+.error-messages {
+    color: black;
+    border: 1px solid #91001A;
+    background: #F03657;
+    padding: 1em 1.6em;
+}
+
+.logo {
+    max-height: 36px;
+}
+
+.pure-menu a, .pure-menu .pure-menu-heading {
+    padding-right: 3px;
+}
+.pure-menu.pure-menu-horizontal .pure-menu-heading.logo-container {
+    padding-bottom: 0;
+}
+
+.pure-menu-heading.additional {
+    padding-left: 0px;
+    margin-left: -25px;
+    font-size: 1.5em;
+}

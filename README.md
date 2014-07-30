@@ -27,9 +27,9 @@ Functionality Required:
     - [x] Create Login form
     - [x] Add flash messages for information
     - [x] Session Based Flash Messages
-- [ ] Logout of an account
-    - [ ] Create Login endpoint
-    - [ ] Add flash message and redirect to login page
+- [x] Logout of an account
+    - [x] Create Login endpoint
+    - [x] Add flash message and redirect to login page
 - [ ] Reset password
     - [ ] Create Reset Password form
     - [ ] Add reset password link to login form

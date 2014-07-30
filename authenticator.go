@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"text/template"
 
 	"github.com/codegangsta/negroni"
 	"github.com/coopernurse/gorp"
@@ -34,20 +35,38 @@ func init() {
 }
 
 func main() {
-	loginTmplCfg := libtmpl.HTMLTemplateConfig{TemplateDir: "templates/", DefaultErrorFunc: libuser.HandleError}
+	tmplCfg := libtmpl.HTMLTemplateConfig{TemplateDir: "templates/", DefaultErrorFunc: libuser.HandleError}
 	router := httprouter.New()
+	router.NotFound = func(w http.ResponseWriter, r *http.Request) {
+		t, err := template.ParseFiles("templates/404.html")
+		if err != nil {
+			return
+		}
+
+		t.ExecuteTemplate(w, "html", nil)
+	}
 	recoveryMiddleware := negroni.NewRecovery()
 	recoveryMiddleware.PrintStack = false
 	n := negroni.New(recoveryMiddleware, negroni.NewLogger(), negroni.NewStatic(http.Dir("public")))
 
 	userRegistration := libuser.UserRegistration{
 		Storage:        userStorageMySQL,
-		TemplateConfig: loginTmplCfg,
+		TemplateConfig: tmplCfg,
 		SessionStore:   sessionStorage,
 	}
 	userLogin := libuser.UserLogin{
 		Storage:        userStorageMySQL,
-		TemplateConfig: loginTmplCfg,
+		TemplateConfig: tmplCfg,
+		SessionStore:   sessionStorage,
+	}
+	userAccount := libuser.UserAccount{
+		Storage:        userStorageMySQL,
+		TemplateConfig: tmplCfg,
+		SessionStore:   sessionStorage,
+	}
+	userLogout := libuser.UserLogout{
+		Storage:        userStorageMySQL,
+		TemplateConfig: tmplCfg,
 		SessionStore:   sessionStorage,
 	}
 
@@ -55,6 +74,8 @@ func main() {
 	router.POST("/register", userRegistration.HandleRegistrationSubmission)
 	router.GET("/login", userLogin.LoginForm)
 	router.POST("/login", userLogin.LoginSubmission)
+	router.GET("/account", userAccount.AccountPage)
+	router.GET("/logout", userLogout.Logout)
 
 	n.UseHandler(context.ClearHandler(router))
 

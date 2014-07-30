@@ -2,6 +2,7 @@
 package libuser
 
 import (
+	"encoding/gob"
 	"time"
 
 	"code.google.com/p/go-uuid/uuid"
@@ -37,6 +38,10 @@ type UserStorage interface {
 	// Returns true if it has and false if it hasn't
 	CheckEmail(email string) (bool, error)
 	CheckPassword(username, password string) (bool, error)
+}
+
+func init() {
+	gob.Register(&User{})
 }
 
 /// CreateUser creates an empty user and returns it.

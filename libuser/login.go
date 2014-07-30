@@ -2,7 +2,6 @@
 package libuser
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -33,6 +32,13 @@ func (ul UserLogin) LoginForm(w http.ResponseWriter, r *http.Request, _ httprout
 	if err != nil {
 		log.Printf("session error: %v", err)
 	}
+
+	if userSession.Values["logged-in"] == true {
+		w.Header().Add("Location", "/account")
+		w.WriteHeader(http.StatusFound)
+		return
+	}
+
 	flashes := userSession.Flashes()
 	username := userSession.Values["reg-username"]
 	if username != "" {
@@ -106,8 +112,7 @@ func (ul UserLogin) LoginSubmission(w http.ResponseWriter, r *http.Request, _ ht
 		userSession.Values["logged-in"] = true
 		userSession.Values["user"] = user
 		userSession.Save(r, w)
-		w.Header().Add("Content-Type", "text/html")
-		w.Write([]byte("Welcome to the Authenticator!"))
-		w.Write([]byte(fmt.Sprintf("<div>username: %v<br>email: %v</div>", user.Username, user.Email)))
+		w.Header().Add("Location", "/account")
+		w.WriteHeader(http.StatusFound)
 	}
 }

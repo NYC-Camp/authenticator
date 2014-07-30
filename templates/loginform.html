@@ -1,9 +1,17 @@
 {{define "content"}}
-<div class="flash-message">{{.error}}</div>
+<div class="flash-messages">
+    {{range .flashes}}
+        <div class="flash">
+            {{.}}
+        </div>
+    {{end}}
+</div>
+<div class="error-message">{{.error}}</div>
 <form action="/login/" method="post">
     <fieldset>
         <label for="username">Username:</label>
-        <input type="text" name="username" placeholder="username">
+        <input type="text" name="username" placeholder="username"
+        value="{{.username}}">
         <label for="password">Password:</label>
         <input type="password" name="password" placeholder="password">
         <input type="submit" value="Login">

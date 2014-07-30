@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/schema"
+	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/nyc-camp/authenticator/libtmpl"
 )
@@ -14,7 +15,10 @@ import (
 // Registration should be simple as we are only collecting a user's username, email address, and password.
 // We should ensure the uniqueness checks (for username and email) are fast.
 type UserRegistration struct {
-	Storage UserStorage
+	Storage        UserStorage
+	TemplateConfig libtmpl.HTMLTemplateConfig
+	//@TODO: Should just pass in a session instead of the session store.
+	SessionStore sessions.Store
 }
 
 type Registration struct {
@@ -24,7 +28,10 @@ type Registration struct {
 }
 
 func (ur UserRegistration) GetRegistrationForm(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	htmlTemplateConfig := libtmpl.HTMLTemplateConfig{TemplateDir: "templates/", DefaultErrorFunc: ur.HandleError}
+	htmlTemplateConfig := libtmpl.HTMLTemplateConfig{
+		TemplateDir:      "templates/",
+		DefaultErrorFunc: ur.HandleError,
+	}
 	htmlTemplate := htmlTemplateConfig.NewHTMLTemplate()
 	htmlTemplate.Content = "templates/registrationform.html"
 	htmlTemplate.Execute(w, nil)
@@ -36,7 +43,12 @@ func (ur UserRegistration) HandleError(w http.ResponseWriter, err error) {
 }
 
 func (ur UserRegistration) HandleRegistrationSubmission(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	err := r.ParseForm()
+	//@TODO: Should just pass in a session instead of the session store.
+	userSession, err := ur.SessionStore.Get(r, "authenticator")
+	if err != nil {
+		log.Printf("session error: %v", err)
+	}
+	err = r.ParseForm()
 	if err != nil {
 		ur.HandleError(w, err)
 		return
@@ -58,20 +70,39 @@ func (ur UserRegistration) HandleRegistrationSubmission(w http.ResponseWriter, r
 		return
 	}
 
-	log.Printf("Username: %v", duplicateUsername)
 	if duplicateUsername {
-		w.Write([]byte("Username already in use."))
+		//@TODO: Add an invalid username or password flash message once sessions
+		//are implemented
+		htmlTemplate := ur.TemplateConfig.NewHTMLTemplate()
+		htmlTemplate.Content = "templates/registrationform.html"
+		htmlTemplate.Execute(w, libtmpl.HTMLTemplateData{
+			Content: map[string]interface{}{
+				"error":    "This username is already in use.",
+				"username": registration.Username,
+				"email":    registration.Email,
+			},
+		})
 		return
 	}
 
-	validEmail, err := VerifyEmail(registration.Username)
+	validEmail, err := VerifyEmail(registration.Email)
 	if err != nil {
 		ur.HandleError(w, err)
 		return
 	}
 
 	if !validEmail {
-		w.Write([]byte("Email not valid."))
+		//@TODO: Add an invalid username or password flash message once sessions
+		//are implemented
+		htmlTemplate := ur.TemplateConfig.NewHTMLTemplate()
+		htmlTemplate.Content = "templates/registrationform.html"
+		htmlTemplate.Execute(w, libtmpl.HTMLTemplateData{
+			Content: map[string]interface{}{
+				"error":    "Email address is not valid.",
+				"username": registration.Username,
+				"email":    registration.Email,
+			},
+		})
 		return
 	}
 	// Move this into a convenience  function.
@@ -82,7 +113,17 @@ func (ur UserRegistration) HandleRegistrationSubmission(w http.ResponseWriter, r
 	}
 
 	if duplicateEmail {
-		w.Write([]byte("Email already in use."))
+		//@TODO: Add an invalid username or password flash message once sessions
+		//are implemented
+		htmlTemplate := ur.TemplateConfig.NewHTMLTemplate()
+		htmlTemplate.Content = "templates/registrationform.html"
+		htmlTemplate.Execute(w, libtmpl.HTMLTemplateData{
+			Content: map[string]interface{}{
+				"error":    "This email address is already in use.",
+				"username": registration.Username,
+				"email":    registration.Email,
+			},
+		})
 		return
 	}
 
@@ -94,9 +135,11 @@ func (ur UserRegistration) HandleRegistrationSubmission(w http.ResponseWriter, r
 	if err != nil {
 		log.Printf("%v\n", err)
 	}
-
-	w.Header().Add("Content-Type", "text/html")
-	w.Write([]byte("Welcome to the Authenticator!"))
-	w.Write([]byte(fmt.Sprintf("<div>username: %v<br>email: %v</div>", newUser.Username, newUser.Email)))
+	userSession.Values["reg-username"] = registration.Username
+	userSession.AddFlash("Your user account has been successfully created. Please check your email for a verification link.")
+	userSession.Save(r, w)
+	w.Header().Add("Location", "/login")
+	w.WriteHeader(http.StatusFound)
+	// w.Write([]byte(fmt.Sprintf("<div>username: %v<br>email: %v</div>", newUser.Username, newUser.Email)))
 
 }

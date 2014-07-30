@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/schema"
+	"github.com/gorilla/sessions"
 	"github.com/julienschmidt/httprouter"
 	"github.com/nyc-camp/authenticator/libtmpl"
 )
@@ -17,6 +18,8 @@ import (
 type UserLogin struct {
 	Storage        UserStorage
 	TemplateConfig libtmpl.HTMLTemplateConfig
+	//@TODO: Should just pass in a session instead of the session store.
+	SessionStore sessions.Store
 }
 
 type Login struct {
@@ -25,9 +28,26 @@ type Login struct {
 }
 
 func (ul UserLogin) LoginForm(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	//@TODO: Should just pass in a session instead of the session store.
+	userSession, err := ul.SessionStore.Get(r, "authenticator")
+	if err != nil {
+		log.Printf("session error: %v", err)
+	}
+	flashes := userSession.Flashes()
+	username := userSession.Values["reg-username"]
+	if username != "" {
+		delete(userSession.Values, "reg-username")
+	}
+	userSession.Save(r, w)
+
 	htmlTemplate := ul.TemplateConfig.NewHTMLTemplate()
 	htmlTemplate.Content = "templates/loginform.html"
-	htmlTemplate.Execute(w, nil)
+	htmlTemplate.Execute(w, libtmpl.HTMLTemplateData{
+		Content: map[string]interface{}{
+			"flashes":  flashes,
+			"username": username,
+		},
+	})
 }
 
 func (ul UserLogin) HandleError(w http.ResponseWriter, err error) {
@@ -35,7 +55,12 @@ func (ul UserLogin) HandleError(w http.ResponseWriter, err error) {
 }
 
 func (ul UserLogin) LoginSubmission(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	err := r.ParseForm()
+	//@TODO: Should just pass in a session instead of the session store.
+	userSession, err := ul.SessionStore.Get(r, "authenticator")
+	if err != nil {
+		log.Printf("session error: %v", err)
+	}
+	err = r.ParseForm()
 	if err != nil {
 		ul.HandleError(w, err)
 		return
@@ -60,7 +85,8 @@ func (ul UserLogin) LoginSubmission(w http.ResponseWriter, r *http.Request, _ ht
 		htmlTemplate.Content = "templates/loginform.html"
 		htmlTemplate.Execute(w, libtmpl.HTMLTemplateData{
 			Content: map[string]interface{}{
-				"error": "The username or password you used is not valid.",
+				"error":    "The username or password you used is not valid.",
+				"username": login.Username,
 			},
 		})
 		return
@@ -77,6 +103,9 @@ func (ul UserLogin) LoginSubmission(w http.ResponseWriter, r *http.Request, _ ht
 		if err != nil {
 			log.Printf("%v", err)
 		}
+		userSession.Values["logged-in"] = true
+		userSession.Values["user"] = user
+		userSession.Save(r, w)
 		w.Header().Add("Content-Type", "text/html")
 		w.Write([]byte("Welcome to the Authenticator!"))
 		w.Write([]byte(fmt.Sprintf("<div>username: %v<br>email: %v</div>", user.Username, user.Email)))

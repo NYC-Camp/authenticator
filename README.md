@@ -9,23 +9,24 @@ Functionality Required:
 - [x] User Storage
 - [ ] Generic Error Handler
 - [ ] Middleware Layers
-    - [ ] session handling
+    - [x] session handling
 - [ ] 404 Page Handler
     - [ ] 404 Page Template
-- [ ] Page templating
-    - [ ] Create page templates package
-    - [ ] Expose page template interface
-    - [ ] Implement page template interface
+- [x] Page templating
+    - [x] Create page templates package
+    - [x] Expose page template interface
+    - [x] Implement page template interface
 - [ ] Register for a new account
     - [x] Create Registration Form
     - [ ] Add password strength tool
     - [x] Add username & email address duplicate checker
     - [ ] Create api endpoints to check for usernames and email addresses
     - [ ] Add captcha (if necessary)
+    - [x] Add flash messages for information
 - [ ] Log into an account
     - [x] Create Login form
     - [x] Add flash messages for information
-    - [ ] Session Based Flash Messages
+    - [x] Session Based Flash Messages
 - [ ] Logout of an account
     - [ ] Create Login endpoint
     - [ ] Add flash message and redirect to login page
